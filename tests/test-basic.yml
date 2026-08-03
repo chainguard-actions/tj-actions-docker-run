@@ -1,0 +1,31 @@
+name: Test basic docker run
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Clean up any existing container
+        run: |
+          docker rm -f test-basic-container 2>/dev/null || true
+      - id: action
+        uses: .
+        with:
+          image: alpine:latest
+          name: test-basic-container
+          args: echo hello-basic
+      - name: Assert container-id is non-empty
+        env:
+          CONTAINER_ID: ${{ steps.action.outputs.container-id }}
+        run: |
+          echo "container-id: $CONTAINER_ID"
+          if [ -z "$CONTAINER_ID" ]; then
+            echo "FAIL: expected a non-empty container-id"
+            exit 1
+          fi
+          echo "PASS: container-id=$CONTAINER_ID"
+      - name: Clean up container
+        if: always()
+        run: |
+          docker rm -f test-basic-container 2>/dev/null || true
