@@ -1,0 +1,32 @@
+name: Test docker run output verification
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run docker command and capture output
+        id: docker-output
+        run: |
+          OUTPUT=$(docker run --rm alpine:3.18 echo "expected-output")
+          echo "output=$OUTPUT" >> $GITHUB_OUTPUT
+      - name: Assert docker output matches expected
+        env:
+          ACTUAL: ${{ steps.docker-output.outputs.output }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "expected-output" ]; then
+            echo "FAIL: expected 'expected-output' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Run action with verified image and args
+        id: action
+        uses: .
+        with:
+          image: alpine:3.18
+          args: sh -c "exit 0"
+      - name: Assert action step succeeded
+        run: |
+          echo "PASS: action completed successfully"
