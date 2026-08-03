@@ -1,0 +1,30 @@
+name: automerge
+on:
+  check_suite:
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    if: |
+      github.actor == 'dependabot[bot]' ||
+      github.actor == 'dependabot' ||
+      github.actor == 'dependabot-preview[bot]' ||
+      github.actor == 'dependabot-preview' ||
+      github.actor == 'renovate[bot]' ||
+      github.actor == 'renovate'
+    steps:
+      - name: automerge
+        uses: pascalgn/automerge-action@22948e0bc22f0aa673800da838595a3e7347e584 # v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          MERGE_METHOD: "rebase"
+          UPDATE_METHOD: "rebase"
+          MERGE_RETRIES: "6"
+          MERGE_RETRY_SLEEP: "100000"
+          MERGE_LABELS: ""
